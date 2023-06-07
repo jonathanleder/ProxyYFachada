@@ -8,10 +8,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-public class PersonaDao {
+public class TelefonoDao {
+
 	private String str;
 
-	public PersonaDao(String str) {
+	public TelefonoDao(String str) {
 		Objects.requireNonNull(str);
 		this.str = str;
 	}
@@ -21,21 +22,24 @@ public class PersonaDao {
 		return connStr.open();
 	}
 
-	public Persona personaPorId(int id) throws Exception {
-		String sql = "select p.nombre,t.numero " + "from personas p, telefonos t "
-				+ "where p.id = t.idpersona and p.id = ?";
+	public Set<Telefono> telefonosDePersonaPorId(int idPersona) throws Exception {
+
+		String sql = "select t.numero " + "from personas p, telefonos t " + "where p.id = t.idpersona and p.id = ?";
+
 		try (Connection conn = obtenerConexion(); PreparedStatement statement = conn.prepareStatement(sql);) {
-			statement.setInt(1, id);
+			statement.setInt(1, idPersona);
+
 			ResultSet result = statement.executeQuery();
 			Set<Telefono> telefonos = new HashSet<Telefono>();
-			String nombrePersona = null;
+
 			while (result.next()) {
-				nombrePersona = result.getString(1);
-				telefonos.add(new Telefono(result.getString(2)));
+				telefonos.add(new Telefono(result.getString(1)));
 			}
-			return new Persona(id, nombrePersona, telefonos);
+
+			return telefonos;
+
 		} catch (SQLException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException("Error en la consulta a la base." + e);
 		}
 	}
 
